@@ -87,10 +87,18 @@ function triggerFullFireAlarm() {
 }
 
 function triggerFlickFireAlarm() {
-    led.toggleAll()
-    basic.pause(1)
-    led.toggleAll()
-    basic.pause(1)
+    for (let i = 0; i < 5; i++) {
+        for (let t = 0; t < 5; t++) {
+            plotLed(i, t)
+        }
+    }
+    basic.pause(1000)
+    for (let i = 0; i < 5; i++) {
+        for (let t = 0; t < 5; t++) {
+            unPlotLed(i, t)
+        }
+    }
+    basic.pause(1000)
 }
 
 function randomWait() {
@@ -187,7 +195,6 @@ basic.forever(function () {
         triggerFullFireAlarm()
     } else if (flickFireAlarm) {
         triggerFlickFireAlarm()
-        basic.pause(1)
     } else {
         //temperature
         const currentTemperature = getTemperature()
@@ -201,7 +208,6 @@ basic.forever(function () {
         savedLightLevel = currentLightLevel
         //fog connection
         setFogConnection(state)
-        basic.pause(1)
     }
 
 })

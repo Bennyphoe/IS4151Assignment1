@@ -70,7 +70,8 @@ def run():
 		host='localhost',
 		user='root',
 		passwd='password',
-		database='readings'
+		database='readings',
+		autocommit = True
 	)
 
 		# Set Connecting Client ID
