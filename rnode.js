@@ -16,7 +16,8 @@ let savedTemperature: number = 0
 let savedLightLevel: number = 0
 let maxTemperature = temperatureGap * 10
 let maxLightLevel = lightLevelGap * 10
-let localFireAlarm = false
+let fullFireAlarm = false
+let flickFireAlarm = false
 
 
 radio.onReceivedString(function (receivedString) {
@@ -39,6 +40,17 @@ radio.onReceivedString(function (receivedString) {
                 state = 1
             }
         }
+    } else if (receivedString.includes("resolve")) {
+        resolve()
+    } else if (receivedString.includes("alarm")) {
+        buffer = receivedString.split('=')
+        commandValue = buffer[1]
+        if (commandValue === "full") {
+            fullFireAlarm = true
+        } else {
+            flickFireAlarm = true
+        }
+        
     } else {
         // basic.showString("R")
         if (state == 1) {
@@ -51,21 +63,37 @@ radio.onReceivedString(function (receivedString) {
                     randomWait()
                     radio.sendString("" + control.deviceName() + "=" + input.temperature() + "-" + input.lightLevel())
                 }
-            } else if (commandKey === "alarm") {
-                if (commandValue === "localFire") {
-                    triggerLocalFireAlarm()
-                }
             }
         }
     }
 })
-function triggerLocalFireAlarm() {
-    localFireAlarm = true
+
+function resolve() {
+    fullFireAlarm = false
+    flickFireAlarm = false
+}
+
+function triggerFullFireAlarm() {
     for (let i = 0; i < 5; i++) {
         for (let t = 0; t < 5; t++) {
             plotLed(i, t)
         }
     }
+}
+
+function triggerFlickFireAlarm() {
+    for (let i = 0; i < 5; i++) {
+        for (let t = 0; t < 5; t++) {
+            plotLed(i, t)
+        }
+    }
+    basic.pause(1)
+    for (let i = 0; i < 5; i++) {
+        for (let t = 0; t < 5; t++) {
+            unplotLed(i, t)
+        }
+    }
+    basic.pause(1)
 }
 
 function randomWait() {
@@ -158,7 +186,11 @@ function getLightLevel() {
 
 
 basic.forever(function () {
-    if (!localFireAlarm) {
+    if (fullFireAlarm) {
+        triggerFullFireAlarm()
+    } else if (flickFireAlarm) {
+        triggerFlickFireAlarm()
+    } else {
         //temperature
         const currentTemperature = getTemperature()
         ledPlotForReadings(currentTemperature, 0, temperatureBaseReading, temperatureGap)

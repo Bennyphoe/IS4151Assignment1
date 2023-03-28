@@ -24,7 +24,15 @@ def reconnect():
 	sendCommand(reconnect + concatNodes)
 
 def receivedMessageFromBroker(payload):
-    print(payload)
+	print(payload)
+	if payload == "resolve":
+		sendCommand("resolve")
+	elif "global" in payload:
+		source = payload.split(":")[1]
+		if source in predefinedNodes or source == fogName:
+			sendCommand("alarm=full")
+		else:
+			sendCommand("alarm=flick")
 
 def doHandShake():
 	strMicrobitDevices = ''
@@ -125,7 +133,7 @@ def saveOutbreak(source):
 def triggerAlarm(toggle):
 	bme280.toggleLed(toggle)
 # 	need to send radio signal to rcontroller
-	sendCommand("localFire")
+	sendCommand("alarm=full")
 	print("local fire alarm activated!")
 
 

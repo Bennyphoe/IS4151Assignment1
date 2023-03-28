@@ -18,9 +18,13 @@ serial.onDataReceived(serial.delimiters(Delimiters.NewLine), function () {
             buffer = data.split(':')
             radio.sendString("" + buffer[1])
         }
-    } else if (data.includes('localFire')) {
+    } else if (data.includes('resolve')) {
         if (state === 2) {
-            radio.sendString('alarm=localFire')
+            radio.sendString('resolve')
+        }
+    } else if (data.includes("alarm")) {
+        if (state === 2) {
+            radio.sendString(data)
         }
     }
 })
