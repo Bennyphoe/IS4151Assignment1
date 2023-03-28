@@ -9,14 +9,64 @@ fireTemperature = 30
 fireLightLevel = 0.8
 localFireAlarm = False
 bme280.toggleLed(False)
-hasNodes = False
+predefinedNodes = ['vapaz', 'togez']
 
 def sendCommand(command):
 		
 	command = command + '\n'
 	ser.write(str.encode(command))
 
+def reconnect():
+	reconnect = "rs="
+	concatNodes = ",".join(predefinedNodes)
+	# Handshaking
+	sendCommand(reconnect + concatNodes)
 
+def doHandShake():
+	strMicrobitDevices = ''
+	handShake = "hs="
+	concatNodes = ",".join(predefinedNodes)
+	# Handshaking
+	sendCommand(handShake + concatNodes)
+
+	while strMicrobitDevices == None or len(strMicrobitDevices) <= 0:
+		strMicrobitDevices = waitResponse()
+		time.sleep(0.1)
+	strMicrobitDevices = strMicrobitDevices.split('=')
+	print(strMicrobitDevices)
+	
+	if len(strMicrobitDevices[1]) > 0:
+		listMicrobitDevices = strMicrobitDevices[1].split(',')
+		if len(listMicrobitDevices) > 0:
+			for mb in listMicrobitDevices:
+				print('Connected to micro:bit device {}...'.format(mb))
+    
+
+def sendCommandToNodes():
+	global predefinedNodes
+	while True:
+		print('Sending command to all micro:bit devices...')
+		commandToTx = 'sensor=readings'				
+		sendCommand('cmd:' + commandToTx)
+		print('Finished sending command to all micro:bit devices...')
+		
+		if commandToTx.startswith('sensor='):
+			
+			strSensorValues = ''
+
+			while strSensorValues == None or len(strSensorValues) <= 0:
+				
+				strSensorValues = waitResponse()
+				time.sleep(0.1)
+		sensorValues = strSensorValues.split(',')
+		if (len(sensorValues) == len(predefinedNodes)):
+			return strSensorValues.split(',')
+		else:
+			reconnect()
+			time.sleep(3) # allow enough time to reconnect
+			print("Didnt receive all nodes values, trying again")
+			
+		
 
 def waitResponse():
 	
@@ -79,63 +129,24 @@ try:
 
 	print("Listening on /dev/ttyACM0... Press CTRL+C to exit")	
 	ser = serial.Serial(port='/dev/ttyACM0', baudrate=115200, timeout=1)
-	
-	
-	
-	conn = sqlite3.connect('readings.db')
-	
-	predefinedNodes = ['vapaz', 'togez']
-	handShake = "hs="
-	concatNodes = ",".join(predefinedNodes)
-	# Handshaking
-	sendCommand(handShake + concatNodes)
-	
-	strMicrobitDevices = ''
-	
-	
-	while strMicrobitDevices == None or len(strMicrobitDevices) <= 0:
-		strMicrobitDevices = waitResponse()
-		time.sleep(0.1)
-	strMicrobitDevices = strMicrobitDevices.split('=')
-	print(strMicrobitDevices)
-	
-	if len(strMicrobitDevices[1]) > 0:
-
-		listMicrobitDevices = strMicrobitDevices[1].split(',')
-		
-		if len(listMicrobitDevices) > 0:
-
-			for mb in listMicrobitDevices:
-				if mb in predefinedNodes:
-					hasNodes = True
-					print('Connected to micro:bit device {}...'.format(mb))
+	conn = sqlite3.connect('readings.db')	
+ 
+	doHandShake()
 			
 	while True:
 		time.sleep(5)
 		listSensorValues = []
 		if not localFireAlarm:
-			if (hasNodes):
-				print('Sending command to all micro:bit devices...')
-				commandToTx = 'sensor=readings'				
-				sendCommand('cmd:' + commandToTx)
-				print('Finished sending command to all micro:bit devices...')
-				
-				if commandToTx.startswith('sensor='):
+			if (len(predefinedNodes) > 0):
+				listSensorValues = sendCommandToNodes()
 					
-					strSensorValues = ''
-
-					while strSensorValues == None or len(strSensorValues) <= 0:
-						
-						strSensorValues = waitResponse()
-						time.sleep(0.1)
-
-				listSensorValues = strSensorValues.split(',')
 			# together with sensor values we also have to persist data coming from rpi
 			fogReadings = bme280.getTemperatureAndLightLevel()
 			listSensorValues.append("{}={}-{}".format(fogName, fogReadings["temp"], fogReadings["lightLevel"]))
 
 			for sensorValue in listSensorValues:
 				print(sensorValue)
+
 			source = checkForFire(listSensorValues)
 			if source:
 				saveOutbreak(source)

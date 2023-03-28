@@ -6,6 +6,8 @@ serial.onDataReceived(serial.delimiters(Delimiters.NewLine), function () {
             radio.sendString(data)
             handshakeStartTime = input.runningTime()
         }
+    } else if (data.includes("rs")) {
+        radio.sendString(data)
     } else if (data.includes('cmd:')) {
         if (state == 2) {
             if (data.includes('cmd:sensor=')) {

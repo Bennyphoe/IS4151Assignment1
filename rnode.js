@@ -31,6 +31,14 @@ radio.onReceivedString(function (receivedString) {
                 radio.sendString("enrol=" + control.deviceName())
             }
         }
+    } else if (receivedString.includes("rs")) {
+        if (state == 0) {
+            const nodesString = receivedString.split("=")[1]
+            const nodesArray = nodesString.split(",")
+            if (nodesArray.indexOf(control.deviceName()) !== -1) {
+                state = 1
+            }
+        }
     } else {
         // basic.showString("R")
         if (state == 1) {
