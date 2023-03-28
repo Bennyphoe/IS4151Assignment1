@@ -8,7 +8,9 @@ import subscriber
 fogName = "fogProcessor1"
 fireTemperature = 30
 fireLightLevel = 0.8
-fireAlarm = False
+localFireAlarm = False
+globalFullFireAlarm = False
+globalFlickFireAlarm = False
 bme280.toggleLed(False)
 predefinedNodes = ['vapaz', 'togez']
 
@@ -24,19 +26,24 @@ def reconnect():
 	sendCommand(reconnect + concatNodes)
 
 def receivedMessageFromBroker(payload):
-	global fireAlarm
+	global localFireAlarm
+	global globalFullFireAlarm
+	global globalFlickFireAlarm
 	print(payload)
 	if payload == "resolve":
-		fireAlarm = False
+		localFireAlarm = False
+		globalFullFireAlarm = False
 		time.sleep(1)
 		sendCommand("resolve")
+		bme280.toggleLed(False)
 		
 	elif "global" in payload:
 		source = payload.split(":")[1]
+		localFireAlarm = False
 		if source in predefinedNodes or source == fogName:
-			sendCommand("alarm=full")
+			globalFullFireAlarm = True
 		else:
-			sendCommand("alarm=flick")
+			globalFlickFireAlarm = True
 
 def doHandShake():
 	strMicrobitDevices = ''
@@ -134,11 +141,14 @@ def saveOutbreak(source):
 	c.execute(sql)
 	conn.commit()
 	
-def triggerAlarm(toggle):
+def triggerAlarmFull(toggle):
 	bme280.toggleLed(toggle)
 # 	need to send radio signal to rcontroller
 	sendCommand("alarm=full")
-	print("local fire alarm activated!")
+ 
+def triggerAlarmFlick():
+    bme280.flickerLed()
+    sendCommand("alarm=flick")
 
 
 try:
@@ -151,7 +161,7 @@ try:
 	while True:
 		time.sleep(5)
 		listSensorValues = []
-		if not fireAlarm:
+		if not localFireAlarm and not globalFullFireAlarm and not globalFlickFireAlarm:
 			if (len(predefinedNodes) > 0):
 				listSensorValues = sendCommandToNodes()
 					
@@ -165,13 +175,16 @@ try:
 			source = checkForFire(listSensorValues)
 			if source:
 				saveOutbreak(source)
-				fireAlarm = True
-				triggerAlarm(True)
+				localFireAlarm = True
+				triggerAlarmFull(True)
 						
 			else:
 				saveData(listSensorValues)
 		else:
-			triggerAlarm(True)
+			if localFireAlarm or globalFullFireAlarm:
+				triggerAlarmFull(True)
+			elif globalFlickFireAlarm:
+				triggerAlarmFlick()
 			print("pending deactivation")
 
 except KeyboardInterrupt:

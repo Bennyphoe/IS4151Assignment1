@@ -33,4 +33,10 @@ def toggleLed(toggle):
         led.value = 1
     else:
         led.value = 0
-    
+
+
+def flickerLed():
+    led.value = 1
+    time.sleep(1)
+    led.value = 0
+    time.sleep(1)
