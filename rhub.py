@@ -8,7 +8,7 @@ import subscriber
 fogName = "fogProcessor1"
 fireTemperature = 30
 fireLightLevel = 0.8
-localFireAlarm = False
+fireAlarm = False
 bme280.toggleLed(False)
 predefinedNodes = ['vapaz', 'togez']
 
@@ -24,9 +24,13 @@ def reconnect():
 	sendCommand(reconnect + concatNodes)
 
 def receivedMessageFromBroker(payload):
+	global fireAlarm
 	print(payload)
 	if payload == "resolve":
+		fireAlarm = False
+		time.sleep(1)
 		sendCommand("resolve")
+		
 	elif "global" in payload:
 		source = payload.split(":")[1]
 		if source in predefinedNodes or source == fogName:
@@ -147,7 +151,8 @@ try:
 	while True:
 		time.sleep(5)
 		listSensorValues = []
-		if not localFireAlarm:
+		print(fireAlarm)
+		if not fireAlarm:
 			if (len(predefinedNodes) > 0):
 				listSensorValues = sendCommandToNodes()
 					
@@ -161,14 +166,12 @@ try:
 			source = checkForFire(listSensorValues)
 			if source:
 				saveOutbreak(source)
-				localFireAlarm = True
+				fireAlarm = True
 				triggerAlarm(True)
 						
 			else:
 				saveData(listSensorValues)
 		else:
-			reconnect()
-			time.sleep(0.2)
 			triggerAlarm(True)
 			print("pending deactivation")
 
