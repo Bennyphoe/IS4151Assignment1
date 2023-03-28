@@ -87,17 +87,9 @@ function triggerFullFireAlarm() {
 }
 
 function triggerFlickFireAlarm() {
-    for (let i = 0; i < 5; i++) {
-        for (let t = 0; t < 5; t++) {
-            plotLed(i, t)
-        }
-    }
+    led.toggleAll()
     basic.pause(1)
-    for (let i = 0; i < 5; i++) {
-        for (let t = 0; t < 5; t++) {
-            unPlotLed(i, t)
-        }
-    }
+    led.toggleAll()
     basic.pause(1)
 }
 
@@ -195,6 +187,7 @@ basic.forever(function () {
         triggerFullFireAlarm()
     } else if (flickFireAlarm) {
         triggerFlickFireAlarm()
+        basic.pause(1)
     } else {
         //temperature
         const currentTemperature = getTemperature()

@@ -33,6 +33,7 @@ def receivedMessageFromBroker(payload):
 	if payload == "resolve":
 		localFireAlarm = False
 		globalFullFireAlarm = False
+		globalFlickFireAlarm = False
 		time.sleep(1)
 		sendCommand("resolve")
 		bme280.toggleLed(False)
