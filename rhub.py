@@ -136,7 +136,6 @@ try:
 	conn = sqlite3.connect('readings.db')	
 	subscriber.run(receivedMessageFromBroker)
 	doHandShake()
-	localFireAlarm = True
 	while True:
 		time.sleep(5)
 		listSensorValues = []
