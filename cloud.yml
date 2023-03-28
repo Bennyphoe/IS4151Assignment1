@@ -1,0 +1,63 @@
+swagger: "2.0"
+info:
+  description: This is the swagger file that goes with our server code
+  version: "1.0.0"
+  title: Swagger REST Article
+consumes:
+  - "application/json"
+produces:
+  - "application/json"
+
+basePath: "/api"
+
+# Paths supported by the server application
+paths:
+  /readings:
+    get:
+      operationId: "readings.read"
+      tags:
+        - "Global Readings"
+      summary: "The readings data structure supported by the server application"
+      description: "Read the list of readings"
+      responses:
+        200:
+          description: "Successful read readings list operation"
+          schema:
+            type: "array"
+            items:
+              properties:
+                id:
+                  type: "number"
+                devicename:
+                  type: "string"
+                temp:
+                  type: "number"
+                lightlevel:
+                  type: "number"
+                timestamp:
+                  type: "string"
+    put:
+      operationId: "readings.create"
+      tags:
+        - Global Reading
+      summary: Create a reading record and add it to the list
+      description: Create a new reading in the database
+      parameters:
+        - name: globalReading
+          in: body
+          description: reading record to create
+          required: True
+          schema:
+            type: object
+            properties:
+              devicename:
+                  type: "string"
+              temp:
+                  type: "number"
+              lightlevel:
+                  type: "number"
+              timestamp:
+                  type: "string"
+      responses:
+        200:
+          description: Successfully created reading record in database
