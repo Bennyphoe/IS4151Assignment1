@@ -132,7 +132,7 @@ try:
 	conn = sqlite3.connect('readings.db')	
  
 	doHandShake()
-			
+	localFireAlarm = True
 	while True:
 		time.sleep(5)
 		listSensorValues = []
@@ -157,6 +157,7 @@ try:
 				saveData(listSensorValues)
 		else:
 			reconnect()
+			time.sleep(0.2)
 			triggerAlarm(True)
 			print("pending deactivation")
 
