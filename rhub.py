@@ -151,7 +151,6 @@ try:
 	while True:
 		time.sleep(5)
 		listSensorValues = []
-		print(fireAlarm)
 		if not fireAlarm:
 			if (len(predefinedNodes) > 0):
 				listSensorValues = sendCommandToNodes()

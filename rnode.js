@@ -71,6 +71,11 @@ radio.onReceivedString(function (receivedString) {
 function resolve() {
     fullFireAlarm = false
     flickFireAlarm = false
+    for (let i = 0; i < 5; i++) {
+        for (let t = 0; t < 5; t++) {
+            unPlotLed(i, t)
+        }
+    }
 }
 
 function triggerFullFireAlarm() {
@@ -90,7 +95,7 @@ function triggerFlickFireAlarm() {
     basic.pause(1)
     for (let i = 0; i < 5; i++) {
         for (let t = 0; t < 5; t++) {
-            unplotLed(i, t)
+            unPlotLed(i, t)
         }
     }
     basic.pause(1)
