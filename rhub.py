@@ -156,6 +156,8 @@ try:
 			else:
 				saveData(listSensorValues)
 		else:
+			reconnect()
+			triggerAlarm(True)
 			print("pending deactivation")
 
 except KeyboardInterrupt:

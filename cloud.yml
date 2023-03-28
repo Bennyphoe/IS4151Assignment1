@@ -61,3 +61,44 @@ paths:
       responses:
         200:
           description: Successfully created reading record in database
+  /outbreaks:
+    get:
+      operationId: "outbreaks.read"
+      tags:
+        - "Global Outbreaks"
+      summary: "The outbreaks data structure supported by the server application"
+      description: "Read the list of outbreaks"
+      responses:
+        200:
+          description: "Successful read outbreaks list operation"
+          schema:
+            type: "array"
+            items:
+              properties:
+                id:
+                  type: "number"
+                source:
+                  type: "string"
+                timestamp:
+                  type: "string"
+    put:
+      operationId: "outbreaks.create"
+      tags:
+        - Global Outbreak
+      summary: Create an outbreak record and add it to the list
+      description: Create a new outbreak in the database
+      parameters:
+        - name: globalOutbreak
+          in: body
+          description: reading record to create
+          required: True
+          schema:
+            type: object
+            properties:
+              source:
+                  type: "string"
+              timestamp:
+                  type: "string"
+      responses:
+        200:
+          description: Successfully created outbreak record in database
