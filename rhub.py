@@ -3,6 +3,7 @@ import time
 import sqlite3
 import bme280
 from datetime import datetime
+import subscriber
 
 fogName = "fogProcessor1"
 fireTemperature = 30
@@ -21,6 +22,9 @@ def reconnect():
 	concatNodes = ",".join(predefinedNodes)
 	# Handshaking
 	sendCommand(reconnect + concatNodes)
+
+def receivedMessageFromBroker(payload):
+    print(payload)
 
 def doHandShake():
 	strMicrobitDevices = ''
@@ -130,7 +134,7 @@ try:
 	print("Listening on /dev/ttyACM0... Press CTRL+C to exit")	
 	ser = serial.Serial(port='/dev/ttyACM0', baudrate=115200, timeout=1)
 	conn = sqlite3.connect('readings.db')	
- 
+	subscriber.run(receivedMessageFromBroker)
 	doHandShake()
 	localFireAlarm = True
 	while True:
