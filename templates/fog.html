@@ -1,0 +1,38 @@
+<html>
+  <head>
+    <title>Fog Server View</title>
+    <link rel="stylesheet" type="text/css" href="../static/style.css"></link>
+  </head>
+  <body>
+    <h1>Fog Server</h1>
+    <table>
+      <tr>
+        <th>Device Name</th>
+        <th>Average Temperature</th>
+        <th>Average Light Level</th>
+      </tr>
+      {% for lineItem in readings %}
+        <tr>
+          <td>{{lineItem[0]}}</td>
+          <td>{{lineItem[1]}}</td>
+          <td>{{lineItem[2]}}</td>
+        </tr>
+      {% endfor %}
+    </table>
+    </br>
+    <table>
+      <tr>
+        <th>Source</th>
+        <th>timestamp</th>
+        <th>tocloud</th>
+      </tr>
+      {% for lineItem in outbreaks %}
+        <tr>
+          <td>{{lineItem[0]}}</td>
+          <td>{{lineItem[1]}}</td>
+          <td>{{lineItem[2]}}</td>
+        </tr>
+      {% endfor %}
+    </table>
+  </body>
+</html>
