@@ -6,7 +6,7 @@ from datetime import datetime
 import subscriber
 
 fogName = "fogProcessor1"
-fireTemperature = 30
+fireTemperature = 40
 fireLightLevel = 0.8
 localFireAlarm = False
 globalFullFireAlarm = False
@@ -126,11 +126,9 @@ def saveData(readings):
 			intLightLevel = int(lightLevel)
 			roundedLightLevel = round((intLightLevel / 255), 3)
 			stringLightLevel = str(roundedLightLevel)
-			print(data[0])
 			sql = "INSERT INTO readings (devicename, temp, lightlevel, timestamp) VALUES('" + data[0] + "', " + temp + ", " + stringLightLevel + ", datetime('now', 'localtime'))"
 			
 		else:
-			print(data[0])
 			sql = "INSERT INTO readings (devicename, temp, lightlevel, timestamp) VALUES('{}','{}','{}',datetime('now', 'localtime'))".format(data[0], temp, lightLevel)
 		c.execute(sql)
 	conn.commit()
@@ -175,8 +173,7 @@ try:
 			if source:
 				saveOutbreak(source)
 				localFireAlarm = True
-			else:
-				print("SAVING")                
+			else:               
 				saveData(listSensorValues)
 		else:
 			print("pending deactivation")
@@ -190,11 +187,7 @@ try:
 					triggerAlarmFlick()
 					sendCommand("alarm=flick")
 					time.sleep(2)
-					print("pending deactivation")
 			
-
-			
-
 			
 			
 
