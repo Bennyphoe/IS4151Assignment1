@@ -3,10 +3,10 @@ import time
 import sqlite3
 import bme280
 from datetime import datetime
-import fog.subscriber as subscriber
+import subscriber
 
 fogName = "fogProcessor1"
-fireTemperature = 40
+fireTemperature = 30
 fireLightLevel = 0.8
 localFireAlarm = False
 globalFullFireAlarm = False
@@ -125,11 +125,12 @@ def saveData(readings):
 		if ("fogProcessor" not in data[0]):
 			intLightLevel = int(lightLevel)
 			roundedLightLevel = round((intLightLevel / 255), 3)
-			stringLightLevel = str(roundedLightLevel)         
+			stringLightLevel = str(roundedLightLevel)
+			print(data[0])
 			sql = "INSERT INTO readings (devicename, temp, lightlevel, timestamp) VALUES('" + data[0] + "', " + temp + ", " + stringLightLevel + ", datetime('now', 'localtime'))"
 			
 		else:
-			
+			print(data[0])
 			sql = "INSERT INTO readings (devicename, temp, lightlevel, timestamp) VALUES('{}','{}','{}',datetime('now', 'localtime'))".format(data[0], temp, lightLevel)
 		c.execute(sql)
 	conn.commit()
@@ -160,7 +161,7 @@ try:
 	while True:
 		time.sleep(5)
 		listSensorValues = []
-		if not localFireAlarm or not globalFullFireAlarm and not globalFlickFireAlarm:
+		if not localFireAlarm and not globalFullFireAlarm and not globalFlickFireAlarm:
 			if (len(predefinedNodes) > 0):
 				listSensorValues = sendCommandToNodes()
 					
@@ -169,24 +170,28 @@ try:
 			listSensorValues.append("{}={}-{}".format(fogName, fogReadings["temp"], fogReadings["lightLevel"]))
 
 			for sensorValue in listSensorValues:
-				print(sensorValue)
-
-			source = checkForFire(listSensorValues)
+				print(sensorValue)      
+			source = checkForFire(listSensorValues) 
 			if source:
 				saveOutbreak(source)
 				localFireAlarm = True
 			else:
+				print("SAVING")                
 				saveData(listSensorValues)
 		else:
+			print("pending deactivation")
 			if (localFireAlarm or globalFullFireAlarm):
-				sendCommand("alarm=full")
 				while(localFireAlarm or globalFullFireAlarm):
 					triggerAlarmFull()
+					sendCommand("alarm=full")
+					time.sleep(2)
 			elif(globalFlickFireAlarm):
-				sendCommand("alarm=flick")
 				while(globalFlickFireAlarm):
 					triggerAlarmFlick()
-			print("pending deactivation")
+					sendCommand("alarm=flick")
+					time.sleep(2)
+					print("pending deactivation")
+			
 
 			
 
