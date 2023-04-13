@@ -6,3 +6,10 @@ table, th, td {
 td {
     padding: 3px
 }
+
+.actions {
+    display: flex;
+    gap: 5px;
+    justify-content: center;
+    align-items: center;
+}

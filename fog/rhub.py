@@ -3,10 +3,10 @@ import time
 import sqlite3
 import bme280
 from datetime import datetime
-import subscriber
+import fog.subscriber as subscriber
 
 fogName = "fogProcessor1"
-fireTemperature = 30
+fireTemperature = 40
 fireLightLevel = 0.8
 localFireAlarm = False
 globalFullFireAlarm = False
@@ -142,14 +142,12 @@ def saveOutbreak(source):
 	c.execute(sql)
 	conn.commit()
 	
-def triggerAlarmFull(toggle):
-	bme280.toggleLed(toggle)
-# 	need to send radio signal to rcontroller
-	sendCommand("alarm=full")
- 
+def triggerAlarmFull():
+	bme280.toggleLed(True)
+	
 def triggerAlarmFlick():
     bme280.flickerLed()
-    sendCommand("alarm=flick")
+    
 
 
 try:
@@ -162,7 +160,7 @@ try:
 	while True:
 		time.sleep(5)
 		listSensorValues = []
-		if not localFireAlarm and not globalFullFireAlarm and not globalFlickFireAlarm:
+		if not localFireAlarm or not globalFullFireAlarm and not globalFlickFireAlarm:
 			if (len(predefinedNodes) > 0):
 				listSensorValues = sendCommandToNodes()
 					
@@ -177,16 +175,23 @@ try:
 			if source:
 				saveOutbreak(source)
 				localFireAlarm = True
-				triggerAlarmFull(True)
-						
 			else:
 				saveData(listSensorValues)
 		else:
-			if localFireAlarm or globalFullFireAlarm:
-				triggerAlarmFull(True)
-			elif globalFlickFireAlarm:
-				triggerAlarmFlick()
+			if (localFireAlarm or globalFullFireAlarm):
+				sendCommand("alarm=full")
+				while(localFireAlarm or globalFullFireAlarm):
+					triggerAlarmFull()
+			elif(globalFlickFireAlarm):
+				sendCommand("alarm=flick")
+				while(globalFlickFireAlarm):
+					triggerAlarmFlick()
 			print("pending deactivation")
+
+			
+
+			
+			
 
 except KeyboardInterrupt:
 		

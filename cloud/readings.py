@@ -1,58 +1,48 @@
 import mysql.connector
 from flask import make_response, abort
 
-
-
-def read():
-	
-	readings = []
-	
+try:
 	conn = mysql.connector.connect(
 		host='localhost',
 		user='root',
 		passwd='password',
-		database='readings'
+		database='readings',
+  		autocommit = True
 	)
+
+except Exception as error:
+    print(error)
+
+def read():
 	
+	readings = []
 	c = conn.cursor()
-	c.execute('SELECT devicename, AVG(temp) AS averagetemp, AVG(lightlevel) AS averageLightLevel FROM readings GROUP BY devicename ORDER BY devicename ASC')
+	c.execute('SELECT devicename, temp, lightlevel FROM readings ORDER BY devicename ASC')
 	results = c.fetchall()
-	
 	for result in results:
-				
-		readings.append({'devicename':result[0],'averagetemp':result[1], 'averagelightlevel': result[2]})
-	
-	conn.close()
-	
+		readings.append({'devicename':result[0],'temperature':result[1], 'lightlevel': result[2]})
+	print(readings)
 	return readings
 
 
 
-def create(globalReading):
-	print(globalReading)
+def create(body):
+	print(body)
 	'''
 	This function creates a new reading record in the database
 	based on the passed in reading data
 	:param globalreading:  Global reading record to create in the database
 	:return:        200 on success
 	'''
-	devicename = globalReading.get('devicename', None)
-	temp = globalReading.get('temp', None)
-	lightlevel = globalReading.get('lightlevel', None)
-	timestamp = globalReading.get('timestamp', None)
-
-	conn = mysql.connector.connect(
-		host='localhost',
-		user='root',
-		passwd='password',
-		database='readings'
-	)
+	devicename = body["devicename"]
+	temp = body["temp"]
+	lightlevel = body["lightlevel"]
+	timestamp = body["timestamp"]
 
 	c = conn.cursor()	
 	sql = "INSERT INTO readings (devicename, temp, lightlevel, timestamp) VALUES('{}', {}, {}, '{}')".format(devicename, temp, lightlevel, timestamp)
 	print(sql)
 	c.execute(sql)
 	conn.commit()
-	conn.close()
 
 	return make_response('Global reading record successfully created', 200)

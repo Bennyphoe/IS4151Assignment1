@@ -4,8 +4,8 @@ import requests
 import json
 
 base_uri = "http://192.168.1.61:5000/"
-globalreading_uri = base_uri + "api/readings"
-globaloutbreak_uri = base_uri + "api/outbreaks"
+globalreading_uri = base_uri + "/readings"
+globaloutbreak_uri = base_uri + "/outbreaks"
 headers = {'content-type': 'application/json'}
 
 def relayEventsToCloud(conn):
@@ -18,7 +18,7 @@ def relayEventsToCloud(conn):
             'source': result[1],
             'timestamp': result[2]
         }
-        req = requests.put(globaloutbreak_uri, headers = headers, data = json.dumps(outbreak))
+        req = requests.post(globaloutbreak_uri, headers = headers, data = json.dumps(outbreak))
         c.execute('UPDATE outbreaks SET tocloud = 1 WHERE id = "{}"'.format(result[0]))
     conn.commit()
 
@@ -27,7 +27,6 @@ def relayReadingsToCloud(conn):
     c.execute("SELECT * from readings WHERE tocloud = 0")
     results = c.fetchall()
     c = conn.cursor()
-    
     for result in results:
         print("Relaying id={}; devicename={}; temp={}; lightlevel={}; timestamp={}".format(result[0], result[1], result[2], result[3], result[4]))
         reading = {
@@ -36,13 +35,12 @@ def relayReadingsToCloud(conn):
             'lightlevel': result[3],
             'timestamp': result[4]
         }
-        req = requests.put(globalreading_uri, headers = headers, data = json.dumps(reading))
+        req = requests.post(globalreading_uri, headers = headers, data = json.dumps(reading))
         c.execute('UPDATE readings SET tocloud = 1 WHERE id = "{}"'.format(result[0]))
     conn.commit()   
 
 try:
     conn = sqlite3.connect("readings.db")
-    
     
     while True:
         time.sleep(10)
